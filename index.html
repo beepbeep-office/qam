@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mémorandum d'Acceptation de Mission CAC</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=DM+Sans:wght@400;500;700&display=swap');
+        
+        :root {
+            --primary: #1e3c72;
+            --primary-light: #2a5298;
+            --primary-dark: #152846;
+            --accent: #d4af37;
+            --accent-light: #e8c968;
+            --bg: #f8f9fc;
+            --surface: #ffffff;
+            --text: #1a1a2e;
+            --text-light: #4a5568;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: rgba(30, 60, 114, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #e8ecf4 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--shadow), 0 0 0 1px var(--border);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 3rem 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        header h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            letter-spacing: -0.5px;
+        }
+        
+        header p {
+            font-size: 1.05rem;
+            opacity: 0.95;
+            font-weight: 300;
+            position: relative;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 2rem 2.5rem 1.5rem;
+            background: linear-gradient(to bottom, #f8fafc 0%, white 100%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 3.2rem;
+            left: 2.5rem;
+            right: 2.5rem;
+            height: 3px;
+            background: var(--border);
+            z-index: 0;
+        }
+        
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+        
+        .progress-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 3px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+        
+        .progress-item.active .progress-number {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .progress-item.completed .progress-number {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        .progress-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-light);
+            text-align: center;
+        }
+        
+        .progress-item.active .progress-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .content {
+            padding: 2.5rem;
+        }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .step-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-subtitle {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        
+        label .required {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+        }
+        
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231e3c72' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+        
+        .calculation-card {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf4 100%);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .calculation-card h3 {
+            font-family: 'Crimson Pro', serif;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem 1.25rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .result-label {
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .result-value {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .risk-matrix {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .risk-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .risk-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        .risk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .risk-name {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 1.05rem;
+        }
+        
+        .risk-score {
+            background: var(--primary);
+            color: white;
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .slider-container {
+            position: relative;
+            padding-top: 0.5rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, 
+                var(--success) 0%, 
+                var(--success) 20%, 
+                var(--warning) 20%, 
+                var(--warning) 60%, 
+                var(--danger) 60%, 
+                var(--danger) 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 3px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 12px rgba(30, 60, 114, 0.4);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 3px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .alert {
+            padding: 1.25rem 1.5rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            border: 2px solid var(--warning);
+            color: #92400e;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            border: 2px solid var(--danger);
+            color: #991b1b;
+        }
+        
+        .alert-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .signature-section {
+            margin-top: 2rem;
+        }
+        
+        .signature-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .signature-option {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .signature-option:hover {
+            border-color: var(--primary);
+            background: #f8fafc;
+        }
+        
+        .signature-option.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+        
+        .signature-canvas-container {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            background: white;
+            margin-top: 1rem;
+        }
+        
+        #signatureCanvas {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: crosshair;
+            width: 100%;
+            display: block;
+            touch-action: none;
+        }
+        
+        .signature-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-secondary {
+            padding: 0.625rem 1.25rem;
+            border: 2px solid var(--border);
+            background: white;
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .file-upload {
+            display: none;
+        }
+        
+        .file-upload-label {
+            display: inline-block;
+            padding: 0.625rem 1.25rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .file-upload-label:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+        
+        .signature-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .signature-preview img {
+            max-width: 300px;
+            max-height: 150px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            padding: 0.5rem;
+        }
+        
+        .decision-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .decision-card {
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: white;
+        }
+        
+        .decision-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+        
+        .decision-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+        
+        .decision-card .decision-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .decision-card .decision-label {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .conditional-field {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #fef3c7;
+            border-radius: 12px;
+            border: 2px solid var(--warning);
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .preview-section {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        .preview-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid var(--primary);
+        }
+        
+        .preview-header h2 {
+            font-family: 'Crimson Pro', serif;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-header .date {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        .preview-section-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .preview-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .preview-item-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .preview-item-value {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 1.05rem;
+        }
+        
+        .preview-signature {
+            margin-top: 3rem;
+            text-align: right;
+        }
+        
+        .preview-signature img {
+            max-width: 250px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            background: white;
+        }
+        
+        .preview-signature-name {
+            margin-top: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            
+            header {
+                padding: 2rem 1.5rem 1.5rem;
+            }
+            
+            header h1 {
+                font-size: 1.875rem;
+            }
+            
+            .progress-bar {
+                padding: 1.5rem 1rem 1rem;
+            }
+            
+            .progress-label {
+                font-size: 0.75rem;
+            }
+            
+            .progress-number {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .decision-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .navigation {
+                flex-direction: column-reverse;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mémorandum d'Acceptation de Mission</h1>
+            <p>Commissaire aux Comptes - Conforme aux normes NEP</p>
+        </header>
+        
+        <div class="progress-bar">
+            <div class="progress-item active" data-step="1">
+                <div class="progress-number">1</div>
+                <div class="progress-label">Informations Client</div>
+            </div>
+            <div class="progress-item" data-step="2">
+                <div class="progress-number">2</div>
+                <div class="progress-label">Seuils de Signification</div>
+            </div>
+            <div class="progress-item" data-step="3">
+                <div class="progress-number">3</div>
+                <div class="progress-label">Risques LBC-FT</div>
+            </div>
+            <div class="progress-item" data-step="4">
+                <div class="progress-number">4</div>
+                <div class="progress-label">Signature</div>
+            </div>
+            <div class="progress-item" data-step="5">
+                <div class="progress-number">5</div>
+                <div class="progress-label">Prévisualisation</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Étape 1: Informations Client -->
+            <div class="step active" id="step1">
+                <h2 class="step-title">Informations Client</h2>
+                <p class="step-subtitle">Renseignez les informations de l'entité auditée</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Raison sociale <span class="required">*</span></label>
+                        <input type="text" id="raisonSociale" placeholder="Ex: SARL DUPONT & ASSOCIÉS" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>SIREN</label>
+                        <input type="text" id="siren" placeholder="123 456 789">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Exercice clos le <span class="required">*</span></label>
+                        <input type="date" id="dateExercice" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Type de mission <span class="required">*</span></label>
+                        <select id="typeMission" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="Commissariat aux comptes">Commissariat aux comptes</option>
+                            <option value="Audit contractuel">Audit contractuel</option>
+                            <option value="Examen limité">Examen limité</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Secteur d'activité</label>
+                    <input type="text" id="secteur" placeholder="Ex: Commerce de détail, Services, Industrie...">
+                </div>
+                
+                <div class="navigation">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Suivant →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 2: Seuils de Signification -->
+            <div class="step" id="step2">
+                <h2 class="step-title">Seuils de Signification NEP 320</h2>
+                <p class="step-subtitle">Calcul automatique des seuils selon les normes NEP</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Chiffre d'affaires (€) <span class="required">*</span></label>
+                        <input type="number" id="ca" placeholder="1000000" step="1000" oninput="calculateThresholds()" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Résultat net (€) <span class="required">*</span></label>
+                        <input type="number" id="resultat" placeholder="50000" step="1000" oninput="calculateThresholds()" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Total du bilan (€)</label>
+                    <input type="number" id="totalBilan" placeholder="500000" step="1000" oninput="calculateThresholds()">
+                </div>
+                
+                <div class="calculation-card">
+                    <h3>📊 Calculs Automatiques</h3>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Seuil de signification global</span>
+                        <span class="result-value" id="seuilGlobal">0 €</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Seuil de planification (75%)</span>
+                        <span class="result-value" id="seuilPlanification">0 €</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Seuil de remontée des anomalies (5%)</span>
+                        <span class="result-value" id="seuilAnomalie">0 €</span>
+                    </div>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-outline" onclick="prevStep()">
+                        ← Précédent
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Suivant →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 3: Risques LBC-FT -->
+            <div class="step" id="step3">
+                <h2 class="step-title">Évaluation des Risques LBC-FT</h2>
+                <p class="step-subtitle">Matrice d'évaluation Lutte contre le Blanchiment et le Financement du Terrorisme</p>
+                
+                <div class="risk-matrix">
+                    <div class="risk-item">
+                        <div class="risk-header">
+                            <span class="risk-name">Complexité de la structure</span>
+                            <span class="risk-score" id="score1">1</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="5" value="1" id="risk1" oninput="updateRiskChart()">
+                            <div class="slider-labels">
+                                <span>Faible</span>
+                                <span>Modéré</span>
+                                <span>Élevé</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="risk-item">
+                        <div class="risk-header">
+                            <span class="risk-name">Opérations internationales</span>
+                            <span class="risk-score" id="score2">1</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="5" value="1" id="risk2" oninput="updateRiskChart()">
+                            <div class="slider-labels">
+                                <span>Faible</span>
+                                <span>Modéré</span>
+                                <span>Élevé</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="risk-item">
+                        <div class="risk-header">
+                            <span class="risk-name">Secteur d'activité sensible</span>
+                            <span class="risk-score" id="score3">1</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="5" value="1" id="risk3" oninput="updateRiskChart()">
+                            <div class="slider-labels">
+                                <span>Faible</span>
+                                <span>Modéré</span>
+                                <span>Élevé</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="risk-item">
+                        <div class="risk-header">
+                            <span class="risk-name">Transparence des bénéficiaires effectifs</span>
+                            <span class="risk-score" id="score4">1</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="5" value="1" id="risk4" oninput="updateRiskChart()">
+                            <div class="slider-labels">
+                                <span>Transparente</span>
+                                <span>Modérée</span>
+                                <span>Opaque</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+                
+                <div id="riskAlert" style="display: none;"></div>
+                
+                <div class="navigation">
+                    <button class="btn btn-outline" onclick="prevStep()">
+                        ← Précédent
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Suivant →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 4: Signature et Décision -->
+            <div class="step" id="step4">
+                <h2 class="step-title">Décision et Signature</h2>
+                <p class="step-subtitle">Formalisez votre décision d'acceptation de mission</p>
+                
+                <div class="form-group">
+                    <label>Décision <span class="required">*</span></label>
+                    <div class="decision-options">
+                        <div class="decision-card" onclick="selectDecision('favorable')">
+                            <div class="decision-icon">✅</div>
+                            <div class="decision-label">Favorable</div>
+                        </div>
+                        <div class="decision-card" onclick="selectDecision('reserves')">
+                            <div class="decision-icon">⚠️</div>
+                            <div class="decision-label">Avec réserves</div>
+                        </div>
+                        <div class="decision-card" onclick="selectDecision('refus')">
+                            <div class="decision-icon">❌</div>
+                            <div class="decision-label">Refus</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="conditionalField" style="display: none;">
+                    <div class="conditional-field">
+                        <label>Précisez les raisons <span class="required">*</span></label>
+                        <textarea id="raisonsDecision" placeholder="Indiquez les réserves ou les motifs de refus..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="signature-section">
+                    <label>Mode de signature <span class="required">*</span></label>
+                    <div class="signature-options">
+                        <div class="signature-option active" onclick="selectSignatureMode('draw')">
+                            ✍️ Dessiner
+                        </div>
+                        <div class="signature-option" onclick="selectSignatureMode('upload')">
+                            📁 Importer une image
+                        </div>
+                    </div>
+                    
+                    <div id="drawSignature" class="signature-canvas-container">
+                        <canvas id="signatureCanvas"></canvas>
+                        <div class="signature-controls">
+                            <button class="btn-secondary" onclick="clearSignature()">🗑️ Effacer</button>
+                        </div>
+                    </div>
+                    
+                    <div id="uploadSignature" style="display: none;">
+                        <input type="file" id="signatureFile" class="file-upload" accept="image/*" onchange="handleSignatureUpload(event)">
+                        <label for="signatureFile" class="file-upload-label">
+                            📤 Choisir un fichier
+                        </label>
+                        <div id="signaturePreview" class="signature-preview"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nom du signataire <span class="required">*</span></label>
+                    <input type="text" id="nomSignataire" placeholder="Prénom NOM" required>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-outline" onclick="prevStep()">
+                        ← Précédent
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Prévisualiser →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Étape 5: Prévisualisation -->
+            <div class="step" id="step5">
+                <h2 class="step-title">Prévisualisation du Mémorandum</h2>
+                <p class="step-subtitle">Vérifiez les informations avant de générer le PDF</p>
+                
+                <div class="preview-section" id="previewContent">
+                    <!-- Le contenu sera généré dynamiquement -->
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-outline" onclick="prevStep()">
+                        ← Modifier
+                    </button>
+                    <button class="btn btn-success" onclick="generatePDF()">
+                        📄 Télécharger le PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let currentStep = 1;
+        let signaturePad;
+        let riskChart;
+        let currentDecision = '';
+        let signatureMode = 'draw';
+        let uploadedSignature = null;
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initSignaturePad();
+            initRiskChart();
+        });
+        
+        // Navigation entre les étapes
+        function nextStep() {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+            
+            if (currentStep < 5) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.remove('active');
+                document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.add('completed');
+                
+                currentStep++;
+                
+                document.getElementById('step' + currentStep).classList.add('active');
+                document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.add('active');
+                
+                if (currentStep === 5) {
+                    generatePreview();
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep--;
+                
+                document.getElementById('step' + currentStep).classList.add('active');
+                document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.remove('completed');
+                document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.add('active');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        
+        // Validation des étapes
+        function validateStep(step) {
+            if (step === 1) {
+                const raisonSociale = document.getElementById('raisonSociale').value;
+                const dateExercice = document.getElementById('dateExercice').value;
+                const typeMission = document.getElementById('typeMission').value;
+                
+                if (!raisonSociale || !dateExercice || !typeMission) {
+                    alert('Veuillez remplir tous les champs obligatoires');
+                    return false;
+                }
+            }
+            
+            if (step === 2) {
+                const ca = document.getElementById('ca').value;
+                const resultat = document.getElementById('resultat').value;
+                
+                if (!ca || !resultat) {
+                    alert('Veuillez renseigner le chiffre d\'affaires et le résultat');
+                    return false;
+                }
+            }
+            
+            if (step === 4) {
+                if (!currentDecision) {
+                    alert('Veuillez sélectionner une décision');
+                    return false;
+                }
+                
+                if ((currentDecision === 'reserves' || currentDecision === 'refus') && 
+                    !document.getElementById('raisonsDecision').value) {
+                    alert('Veuillez préciser les raisons de votre décision');
+                    return false;
+                }
+                
+                const nomSignataire = document.getElementById('nomSignataire').value;
+                if (!nomSignataire) {
+                    alert('Veuillez renseigner le nom du signataire');
+                    return false;
+                }
+                
+                // Vérifier qu'une signature existe
+                if (signatureMode === 'draw' && signaturePad.isEmpty()) {
+                    alert('Veuillez signer le document');
+                    return false;
+                }
+                
+                if (signatureMode === 'upload' && !uploadedSignature) {
+                    alert('Veuillez importer une signature');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // Calcul des seuils de signification
+        function calculateThresholds() {
+            const ca = parseFloat(document.getElementById('ca').value) || 0;
+            const resultat = Math.abs(parseFloat(document.getElementById('resultat').value) || 0);
+            const totalBilan = parseFloat(document.getElementById('totalBilan').value) || 0;
+            
+            // Méthode de calcul selon NEP 320
+            let seuilGlobal = 0;
+            
+            // Utiliser 0.5% à 1% du CA ou 5% du résultat (selon le plus approprié)
+            const seuilCA = ca * 0.005; // 0.5% du CA
+            const seuilResultat = resultat * 0.05; // 5% du résultat
+            
+            if (totalBilan > 0) {
+                const seuilBilan = totalBilan * 0.01; // 1% du bilan
+                seuilGlobal = Math.max(seuilCA, seuilResultat, seuilBilan);
+            } else {
+                seuilGlobal = Math.max(seuilCA, seuilResultat);
+            }
+            
+            const seuilPlanification = seuilGlobal * 0.75;
+            const seuilAnomalie = seuilGlobal * 0.05;
+            
+            document.getElementById('seuilGlobal').textContent = formatCurrency(seuilGlobal);
+            document.getElementById('seuilPlanification').textContent = formatCurrency(seuilPlanification);
+            document.getElementById('seuilAnomalie').textContent = formatCurrency(seuilAnomalie);
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+        
+        // Gestion du graphique radar des risques
+        function initRiskChart() {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            riskChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Complexité structure',
+                        'Opérations internationales',
+                        'Secteur sensible',
+                        'Transparence'
+                    ],
+                    datasets: [{
+                        label: 'Niveau de risque',
+                        data: [1, 1, 1, 1],
+                        backgroundColor: 'rgba(30, 60, 114, 0.2)',
+                        borderColor: 'rgba(30, 60, 114, 1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgba(30, 60, 114, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(30, 60, 114, 1)',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+        
+        function updateRiskChart() {
+            const risk1 = parseInt(document.getElementById('risk1').value);
+            const risk2 = parseInt(document.getElementById('risk2').value);
+            const risk3 = parseInt(document.getElementById('risk3').value);
+            const risk4 = parseInt(document.getElementById('risk4').value);
+            
+            document.getElementById('score1').textContent = risk1;
+            document.getElementById('score2').textContent = risk2;
+            document.getElementById('score3').textContent = risk3;
+            document.getElementById('score4').textContent = risk4;
+            
+            // Mise à jour des couleurs des scores
+            updateScoreColor('score1', risk1);
+            updateScoreColor('score2', risk2);
+            updateScoreColor('score3', risk3);
+            updateScoreColor('score4', risk4);
+            
+            riskChart.data.datasets[0].data = [risk1, risk2, risk3, risk4];
+            riskChart.update();
+            
+            // Calcul du risque moyen
+            const avgRisk = (risk1 + risk2 + risk3 + risk4) / 4;
+            
+            // Affichage de l'alerte si risque élevé
+            const alertDiv = document.getElementById('riskAlert');
+            if (avgRisk > 3) {
+                alertDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <div class="alert-icon">⚠️</div>
+                        <div>
+                            <strong>Attention - Risque élevé détecté</strong><br>
+                            Le niveau de risque moyen (${avgRisk.toFixed(1)}/5) nécessite une vigilance accrue et des diligences complémentaires selon la réglementation LBC-FT.
+                        </div>
+                    </div>
+                `;
+                alertDiv.style.display = 'block';
+            } else if (avgRisk > 2) {
+                alertDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <div class="alert-icon">ℹ️</div>
+                        <div>
+                            <strong>Risque modéré</strong><br>
+                            Le niveau de risque moyen (${avgRisk.toFixed(1)}/5) est acceptable mais nécessite une attention particulière lors de la mission.
+                        </div>
+                    </div>
+                `;
+                alertDiv.style.display = 'block';
+            } else {
+                alertDiv.style.display = 'none';
+            }
+        }
+        
+        function updateScoreColor(elementId, score) {
+            const element = document.getElementById(elementId);
+            if (score <= 2) {
+                element.style.background = 'var(--success)';
+            } else if (score <= 3) {
+                element.style.background = 'var(--warning)';
+            } else {
+                element.style.background = 'var(--danger)';
+            }
+        }
+        
+        // Gestion de la signature
+        function initSignaturePad() {
+            const canvas = document.getElementById('signatureCanvas');
+            
+            // Attendre que le DOM soit complètement chargé
+            setTimeout(() => {
+                resizeCanvas();
+                
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    penColor: 'rgb(30, 60, 114)',
+                    minWidth: 1,
+                    maxWidth: 3,
+                    throttle: 0,
+                    velocityFilterWeight: 0.7
+                });
+                
+                console.log('Signature pad initialisé');
+            }, 100);
+            
+            window.addEventListener('resize', resizeCanvas);
+        }
+        
+        function resizeCanvas() {
+            const canvas = document.getElementById('signatureCanvas');
+            const container = canvas.parentElement;
+            
+            // Définir des dimensions fixes pour le canvas
+            canvas.style.width = '100%';
+            canvas.style.height = '200px';
+            
+            // Récupérer les dimensions réelles après application du style
+            const rect = canvas.getBoundingClientRect();
+            
+            // Configurer les dimensions du canvas en pixels réels
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            
+            // Mise à l'échelle du contexte
+            const ctx = canvas.getContext('2d');
+            ctx.scale(ratio, ratio);
+            
+            // Réinitialiser le signaturePad si il existe déjà
+            if (signaturePad) {
+                signaturePad.clear();
+            }
+        }
+        
+        function clearSignature() {
+            signaturePad.clear();
+        }
+        
+        function selectSignatureMode(mode) {
+            signatureMode = mode;
+            
+            document.querySelectorAll('.signature-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            
+            if (mode === 'draw') {
+                document.querySelector('.signature-option:first-child').classList.add('active');
+                document.getElementById('drawSignature').style.display = 'block';
+                document.getElementById('uploadSignature').style.display = 'none';
+            } else {
+                document.querySelector('.signature-option:last-child').classList.add('active');
+                document.getElementById('drawSignature').style.display = 'none';
+                document.getElementById('uploadSignature').style.display = 'block';
+            }
+        }
+        
+        function handleSignatureUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedSignature = e.target.result;
+                    document.getElementById('signaturePreview').innerHTML = 
+                        `<img src="${e.target.result}" alt="Signature">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Gestion de la décision
+        function selectDecision(decision) {
+            currentDecision = decision;
+            
+            document.querySelectorAll('.decision-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            event.target.closest('.decision-card').classList.add('active');
+            
+            const conditionalField = document.getElementById('conditionalField');
+            if (decision === 'reserves' || decision === 'refus') {
+                conditionalField.style.display = 'block';
+            } else {
+                conditionalField.style.display = 'none';
+            }
+        }
+        
+        // Génération de la prévisualisation
+        function generatePreview() {
+            const data = collectFormData();
+            
+            let decisionText = '';
+            let decisionIcon = '';
+            switch(currentDecision) {
+                case 'favorable':
+                    decisionText = 'Avis FAVORABLE';
+                    decisionIcon = '✅';
+                    break;
+                case 'reserves':
+                    decisionText = 'Avis FAVORABLE AVEC RÉSERVES';
+                    decisionIcon = '⚠️';
+                    break;
+                case 'refus':
+                    decisionText = 'Avis DÉFAVORABLE';
+                    decisionIcon = '❌';
+                    break;
+            }
+            
+            let signatureImg = '';
+            if (signatureMode === 'draw') {
+                signatureImg = signaturePad.toDataURL();
+            } else {
+                signatureImg = uploadedSignature;
+            }
+            
+            const avgRisk = (parseInt(document.getElementById('risk1').value) + 
+                           parseInt(document.getElementById('risk2').value) + 
+                           parseInt(document.getElementById('risk3').value) + 
+                           parseInt(document.getElementById('risk4').value)) / 4;
+            
+            const html = `
+                <div class="preview-header">
+                    <h2>MÉMORANDUM D'ACCEPTATION DE MISSION</h2>
+                    <p class="date">Date d'établissement : ${new Date().toLocaleDateString('fr-FR')}</p>
+                </div>
+                
+                <h3 class="preview-section-title">1. Informations sur l'entité</h3>
+                <div class="preview-grid">
+                    <div class="preview-item">
+                        <div class="preview-item-label">Raison sociale</div>
+                        <div class="preview-item-value">${data.raisonSociale}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">SIREN</div>
+                        <div class="preview-item-value">${data.siren || 'Non renseigné'}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Exercice clos le</div>
+                        <div class="preview-item-value">${new Date(data.dateExercice).toLocaleDateString('fr-FR')}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Type de mission</div>
+                        <div class="preview-item-value">${data.typeMission}</div>
+                    </div>
+                    ${data.secteur ? `
+                    <div class="preview-item">
+                        <div class="preview-item-label">Secteur d'activité</div>
+                        <div class="preview-item-value">${data.secteur}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <h3 class="preview-section-title">2. Seuils de signification (NEP 320)</h3>
+                <div class="preview-grid">
+                    <div class="preview-item">
+                        <div class="preview-item-label">Chiffre d'affaires</div>
+                        <div class="preview-item-value">${formatCurrency(data.ca)}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Résultat net</div>
+                        <div class="preview-item-value">${formatCurrency(data.resultat)}</div>
+                    </div>
+                    ${data.totalBilan ? `
+                    <div class="preview-item">
+                        <div class="preview-item-label">Total du bilan</div>
+                        <div class="preview-item-value">${formatCurrency(data.totalBilan)}</div>
+                    </div>
+                    ` : ''}
+                    <div class="preview-item">
+                        <div class="preview-item-label">Seuil de signification global</div>
+                        <div class="preview-item-value">${document.getElementById('seuilGlobal').textContent}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Seuil de planification</div>
+                        <div class="preview-item-value">${document.getElementById('seuilPlanification').textContent}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Seuil d'anomalie</div>
+                        <div class="preview-item-value">${document.getElementById('seuilAnomalie').textContent}</div>
+                    </div>
+                </div>
+                
+                <h3 class="preview-section-title">3. Évaluation des risques LBC-FT</h3>
+                <div class="preview-grid">
+                    <div class="preview-item">
+                        <div class="preview-item-label">Complexité de la structure</div>
+                        <div class="preview-item-value">${document.getElementById('score1').textContent}/5</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Opérations internationales</div>
+                        <div class="preview-item-value">${document.getElementById('score2').textContent}/5</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Secteur sensible</div>
+                        <div class="preview-item-value">${document.getElementById('score3').textContent}/5</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Transparence</div>
+                        <div class="preview-item-value">${document.getElementById('score4').textContent}/5</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-item-label">Risque moyen</div>
+                        <div class="preview-item-value" style="color: ${avgRisk > 3 ? 'var(--danger)' : avgRisk > 2 ? 'var(--warning)' : 'var(--success)'}">${avgRisk.toFixed(1)}/5</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 2rem 0;">
+                    <img src="${riskChart.toBase64Image()}" style="max-width: 400px; border: 2px solid var(--border); border-radius: 12px; padding: 1rem; background: white;">
+                </div>
+                
+                <h3 class="preview-section-title">4. Décision</h3>
+                <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf4 100%); border-radius: 12px; margin-bottom: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">${decisionIcon}</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${decisionText}</div>
+                    ${data.raisonsDecision ? `
+                    <div style="margin-top: 1.5rem; padding: 1.5rem; background: white; border-radius: 8px; text-align: left;">
+                        <strong>Observations :</strong><br>
+                        ${data.raisonsDecision}
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="preview-signature">
+                    <p style="margin-bottom: 1rem; font-weight: 600;">Le Commissaire aux Comptes,</p>
+                    <img src="${signatureImg}" alt="Signature">
+                    <p class="preview-signature-name">${data.nomSignataire}</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
+                        Date : ${new Date().toLocaleDateString('fr-FR')}
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = html;
+        }
+        
+        // Collecte des données du formulaire
+        function collectFormData() {
+            return {
+                raisonSociale: document.getElementById('raisonSociale').value,
+                siren: document.getElementById('siren').value,
+                dateExercice: document.getElementById('dateExercice').value,
+                typeMission: document.getElementById('typeMission').value,
+                secteur: document.getElementById('secteur').value,
+                ca: parseFloat(document.getElementById('ca').value),
+                resultat: parseFloat(document.getElementById('resultat').value),
+                totalBilan: parseFloat(document.getElementById('totalBilan').value) || 0,
+                raisonsDecision: document.getElementById('raisonsDecision').value,
+                nomSignataire: document.getElementById('nomSignataire').value
+            };
+        }
+        
+        // Génération du PDF
+        async function generatePDF() {
+            try {
+                // Vérifier que jsPDF est chargé
+                if (typeof window.jspdf === 'undefined') {
+                    alert('Erreur: La bibliothèque PDF n\'est pas chargée. Veuillez recharger la page.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const data = collectFormData();
+                
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 20;
+                let yPos = 20;
+                
+                // En-tête avec fond bleu
+                doc.setFillColor(30, 60, 114);
+                doc.rect(0, 0, pageWidth, 40, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(20);
+                doc.setFont('helvetica', 'bold');
+                doc.text('MÉMORANDUM D\'ACCEPTATION DE MISSION', pageWidth / 2, 20, { align: 'center' });
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Commissaire aux Comptes - Conforme aux normes NEP', pageWidth / 2, 30, { align: 'center' });
+                
+                yPos = 55;
+                doc.setTextColor(0, 0, 0);
+                
+                // Date
+                doc.setFontSize(9);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Date d'établissement : ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, yPos, { align: 'right' });
+                
+                yPos += 12;
+                
+                // Fonction pour vérifier si on a besoin d'une nouvelle page
+                function checkNewPage(spaceNeeded) {
+                    if (yPos + spaceNeeded > pageHeight - 30) {
+                        doc.addPage();
+                        yPos = 20;
+                        return true;
+                    }
+                    return false;
+                }
+                
+                // Section 1 : Informations client
+                checkNewPage(40);
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 60, 114);
+                doc.text('1. INFORMATIONS SUR L\'ENTITÉ', margin, yPos);
+                
+                // Ligne de séparation
+                doc.setDrawColor(212, 175, 55);
+                doc.setLineWidth(0.5);
+                doc.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
+                
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                
+                const infoItems = [
+                    { label: 'Raison sociale', value: data.raisonSociale },
+                    { label: 'SIREN', value: data.siren || 'Non renseigné' },
+                    { label: 'Exercice clos le', value: new Date(data.dateExercice).toLocaleDateString('fr-FR') },
+                    { label: 'Type de mission', value: data.typeMission }
+                ];
+                
+                if (data.secteur) {
+                    infoItems.push({ label: 'Secteur d\'activité', value: data.secteur });
+                }
+                
+                infoItems.forEach(item => {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(item.label + ' : ', margin, yPos);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(item.value, margin + 45, yPos);
+                    yPos += 6;
+                });
+                
+                yPos += 8;
+                
+                // Section 2 : Seuils
+                checkNewPage(50);
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 60, 114);
+                doc.text('2. SEUILS DE SIGNIFICATION (NEP 320)', margin, yPos);
+                doc.setDrawColor(212, 175, 55);
+                doc.setLineWidth(0.5);
+                doc.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                
+                const seuilItems = [
+                    { label: 'Chiffre d\'affaires', value: formatCurrency(data.ca) },
+                    { label: 'Résultat net', value: formatCurrency(data.resultat) }
+                ];
+                
+                if (data.totalBilan) {
+                    seuilItems.push({ label: 'Total du bilan', value: formatCurrency(data.totalBilan) });
+                }
+                
+                seuilItems.forEach(item => {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(item.label + ' : ', margin, yPos);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(item.value, margin + 50, yPos);
+                    yPos += 6;
+                });
+                
+                yPos += 4;
+                
+                // Seuils calculés avec fond gris
+                doc.setFillColor(245, 245, 250);
+                doc.roundedRect(margin, yPos - 3, pageWidth - 2 * margin, 24, 2, 2, 'F');
+                
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 60, 114);
+                doc.text('Seuil de signification global : ', margin + 3, yPos + 3);
+                doc.text(document.getElementById('seuilGlobal').textContent, margin + 70, yPos + 3);
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                doc.text('Seuil de planification : ', margin + 3, yPos + 10);
+                doc.text(document.getElementById('seuilPlanification').textContent, margin + 70, yPos + 10);
+                
+                doc.text('Seuil d\'anomalie : ', margin + 3, yPos + 17);
+                doc.text(document.getElementById('seuilAnomalie').textContent, margin + 70, yPos + 17);
+                
+                yPos += 28;
+                
+                // Section 3 : Risques
+                checkNewPage(80);
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 60, 114);
+                doc.text('3. ÉVALUATION DES RISQUES LBC-FT', margin, yPos);
+                doc.setDrawColor(212, 175, 55);
+                doc.setLineWidth(0.5);
+                doc.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                
+                const avgRisk = (parseInt(document.getElementById('risk1').value) + 
+                               parseInt(document.getElementById('risk2').value) + 
+                               parseInt(document.getElementById('risk3').value) + 
+                               parseInt(document.getElementById('risk4').value)) / 4;
+                
+                const riskItems = [
+                    { label: 'Complexité de la structure', value: document.getElementById('score1').textContent },
+                    { label: 'Opérations internationales', value: document.getElementById('score2').textContent },
+                    { label: 'Secteur sensible', value: document.getElementById('score3').textContent },
+                    { label: 'Transparence', value: document.getElementById('score4').textContent }
+                ];
+                
+                riskItems.forEach(item => {
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(item.label + ' : ', margin, yPos);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(item.value + '/5', margin + 70, yPos);
+                    yPos += 6;
+                });
+                
+                yPos += 2;
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 60, 114);
+                doc.text('Risque moyen : ', margin, yPos);
+                doc.setTextColor(avgRisk > 3 ? 220 : avgRisk > 2 ? 245 : 16, avgRisk > 3 ? 68 : avgRisk > 2 ? 158 : 185, avgRisk > 3 ? 68 : avgRisk > 2 ? 11 : 129);
+                doc.text(avgRisk.toFixed(1) + '/5', margin + 35, yPos);
+                doc.setTextColor(0, 0, 0);
+                
+                yPos += 10;
+                
+                // Graphique radar
+                try {
+                    const chartImg = riskChart.toBase64Image();
+                    const imgWidth = 90;
+                    const imgHeight = 70;
+                    
+                    checkNewPage(imgHeight + 5);
+                    doc.addImage(chartImg, 'PNG', (pageWidth - imgWidth) / 2, yPos, imgWidth, imgHeight);
+                    yPos += imgHeight + 10;
+                } catch (e) {
+                    console.error('Erreur lors de l\'ajout du graphique:', e);
+                    yPos += 5;
+                }
+                
+                // Section 4 : Décision
+                checkNewPage(60);
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(30, 60, 114);
+                doc.text('4. DÉCISION', margin, yPos);
+                doc.setDrawColor(212, 175, 55);
+                doc.setLineWidth(0.5);
+                doc.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
+                yPos += 12;
+                
+                let decisionText = '';
+                let decisionColor = [30, 60, 114];
+                
+                switch(currentDecision) {
+                    case 'favorable':
+                        decisionText = 'AVIS FAVORABLE';
+                        decisionColor = [16, 185, 129];
+                        break;
+                    case 'reserves':
+                        decisionText = 'AVIS FAVORABLE AVEC RÉSERVES';
+                        decisionColor = [245, 158, 11];
+                        break;
+                    case 'refus':
+                        decisionText = 'AVIS DÉFAVORABLE';
+                        decisionColor = [239, 68, 68];
+                        break;
+                }
+                
+                // Encadré décision
+                doc.setFillColor(240, 244, 248);
+                doc.roundedRect(margin, yPos - 3, pageWidth - 2 * margin, 18, 2, 2, 'F');
+                
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(decisionColor[0], decisionColor[1], decisionColor[2]);
+                doc.text(decisionText, pageWidth / 2, yPos + 7, { align: 'center' });
+                
+                yPos += 22;
+                
+                if (data.raisonsDecision) {
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Observations :', margin, yPos);
+                    yPos += 6;
+                    doc.setFont('helvetica', 'normal');
+                    const lines = doc.splitTextToSize(data.raisonsDecision, pageWidth - 2 * margin);
+                    
+                    checkNewPage(lines.length * 5 + 10);
+                    doc.text(lines, margin, yPos);
+                    yPos += lines.length * 5 + 8;
+                }
+                
+                // Signature
+                checkNewPage(40);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                const sigX = pageWidth - margin - 70;
+                doc.text('Le Commissaire aux Comptes,', sigX, yPos);
+                yPos += 8;
+                
+                // Ajouter la signature
+                try {
+                    let signatureImg = '';
+                    if (signatureMode === 'draw') {
+                        if (!signaturePad.isEmpty()) {
+                            signatureImg = signaturePad.toDataURL();
+                        }
+                    } else {
+                        signatureImg = uploadedSignature;
+                    }
+                    
+                    if (signatureImg) {
+                        doc.addImage(signatureImg, 'PNG', sigX, yPos, 60, 25);
+                        yPos += 28;
+                    }
+                } catch (e) {
+                    console.error('Erreur lors de l\'ajout de la signature:', e);
+                    yPos += 25;
+                }
+                
+                doc.setFont('helvetica', 'bold');
+                doc.text(data.nomSignataire, sigX, yPos);
+                yPos += 5;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, sigX, yPos);
+                
+                // Pied de page sur toutes les pages
+                const totalPages = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(`Page ${i} sur ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+                    doc.text('Document confidentiel - Normes NEP', pageWidth / 2, pageHeight - 5, { align: 'center' });
+                }
+                
+                // Téléchargement
+                const filename = `Memorandum_CAC_${data.raisonSociale.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(filename);
+                
+                console.log('PDF généré avec succès!');
+                
+            } catch (error) {
+                console.error('Erreur lors de la génération du PDF:', error);
+                alert('Une erreur est survenue lors de la génération du PDF. Détails dans la console.');
+            }
+        }
+    </script>
+</body>
+</html>
