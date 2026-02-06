@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mémorandum d'Acceptation de Mission CAC</title>
+    <title>Acceptation de Mission CAC</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -496,8 +496,10 @@
             border-radius: 8px;
             cursor: crosshair;
             width: 100%;
+            height: 160px;
             display: block;
             touch-action: none;
+            background: white;
         }
         
         .signature-controls {
@@ -757,6 +759,21 @@
             transform: none !important;
         }
         
+        /* Footer avec copyright */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(to bottom, white 0%, #f8fafc 100%);
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+        
+        .footer-copyright {
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
         @media (max-width: 768px) {
             body {
                 padding: 1rem 0.5rem;
@@ -843,15 +860,41 @@
                 <h2 class="step-title">Informations Client</h2>
                 <p class="step-subtitle">Renseignez les informations de l'entité auditée</p>
                 
+                <div class="form-group">
+                    <label>Recherche entreprise <span class="required">*</span></label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="searchCompanyInput" 
+                               placeholder="Tapez le nom de l'entreprise ou SIREN..." 
+                               onkeypress="if(event.key==='Enter') searchCompanyByName()"
+                               style="flex: 1;">
+                        <button type="button" 
+                                onclick="searchCompanyByName()" 
+                                style="padding: 0.875rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            🔍 Rechercher
+                        </button>
+                    </div>
+                    <div id="searchStatus" style="margin-top: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--text-light); min-height: 20px;"></div>
+                </div>
+                
+                <!-- Résultats de recherche -->
+                <div id="searchResultsContainer" style="display: none; margin-bottom: 1.5rem;">
+                    <div style="background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf4 100%); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; max-height: 300px; overflow-y: auto;">
+                        <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">
+                            📋 Résultats trouvés :
+                        </h4>
+                        <div id="searchResultsList" style="display: grid; gap: 0.75rem;"></div>
+                    </div>
+                </div>
+                
                 <div class="form-row">
                     <div class="form-group">
                         <label>Raison sociale <span class="required">*</span></label>
-                        <input type="text" id="raisonSociale" placeholder="Ex: SARL DUPONT & ASSOCIÉS" required>
+                        <input type="text" id="raisonSociale" placeholder="Ex: SARL DUPONT & ASSOCIÉS" required readonly style="background: #f8fafc;">
                     </div>
                     
                     <div class="form-group">
-                        <label>SIREN</label>
-                        <input type="text" id="siren" placeholder="123 456 789">
+                        <label>SIREN <span class="required">*</span></label>
+                        <input type="text" id="siren" placeholder="123 456 789" readonly style="background: #f8fafc; font-family: monospace; font-weight: 700; color: var(--primary);">
                     </div>
                 </div>
                 
@@ -892,19 +935,19 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Chiffre d'affaires (€) <span class="required">*</span></label>
-                        <input type="number" id="ca" placeholder="1000000" step="1000" oninput="calculateThresholds()" required>
+                        <label>Chiffre d'affaires (K€) <span class="required">*</span></label>
+                        <input type="number" id="ca" placeholder="1000" step="1" oninput="calculateThresholds()" required>
                     </div>
                     
                     <div class="form-group">
-                        <label>Résultat net (€) <span class="required">*</span></label>
-                        <input type="number" id="resultat" placeholder="50000" step="1000" oninput="calculateThresholds()" required>
+                        <label>Résultat net (K€) <span class="required">*</span></label>
+                        <input type="number" id="resultat" placeholder="50" step="1" oninput="calculateThresholds()" required>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>Total du bilan (€)</label>
-                    <input type="number" id="totalBilan" placeholder="500000" step="1000" oninput="calculateThresholds()">
+                    <label>Total du bilan (K€)</label>
+                    <input type="number" id="totalBilan" placeholder="500" step="1" oninput="calculateThresholds()">
                 </div>
                 
                 <div class="calculation-card">
@@ -912,17 +955,17 @@
                     
                     <div class="result-item">
                         <span class="result-label">Seuil de signification global</span>
-                        <span class="result-value" id="seuilGlobal">0 €</span>
+                        <span class="result-value" id="seuilGlobal">0 K€</span>
                     </div>
                     
                     <div class="result-item">
                         <span class="result-label">Seuil de planification (75%)</span>
-                        <span class="result-value" id="seuilPlanification">0 €</span>
+                        <span class="result-value" id="seuilPlanification">0 K€</span>
                     </div>
                     
                     <div class="result-item">
                         <span class="result-label">Seuil de remontée des anomalies (5%)</span>
-                        <span class="result-value" id="seuilAnomalie">0 €</span>
+                        <span class="result-value" id="seuilAnomalie">0 K€</span>
                     </div>
                 </div>
                 
@@ -1061,9 +1104,13 @@
                     </div>
                     
                     <div id="drawSignature" class="signature-canvas-container">
+                        <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem;">
+                            ✍️ Dessinez votre signature ci-dessous avec votre souris ou votre doigt
+                        </p>
                         <canvas id="signatureCanvas"></canvas>
                         <div class="signature-controls">
                             <button class="btn-secondary" onclick="clearSignature()">🗑️ Effacer</button>
+                            <button class="btn-secondary" onclick="testSignature()" style="margin-left: auto;">🧪 Test</button>
                         </div>
                     </div>
                     
@@ -1110,6 +1157,11 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Footer avec copyright -->
+        <div class="footer">
+            <p class="footer-copyright">© 2026 BeepBeepOffice - Tous droits réservés</p>
+        </div>
     </div>
     
     <script>
@@ -1121,11 +1173,122 @@
         let signatureMode = 'draw';
         let uploadedSignature = null;
         
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
+        // API de recherche d'entreprises
+        const API_SEARCH = "https://recherche-entreprises.api.gouv.fr/search";
+        let currentSearchResults = [];
+        
+        // Fonction de recherche d'entreprise - INSPIRÉE D'AUDIT-SENTINEL
+        async function searchCompanyByName() {
+            const query = document.getElementById('searchCompanyInput').value.trim();
+            if (!query) {
+                alert('Veuillez saisir un nom d\'entreprise ou un SIREN');
+                return;
+            }
+            
+            const statusDiv = document.getElementById('searchStatus');
+            statusDiv.innerHTML = '🔄 Recherche en cours...';
+            statusDiv.style.color = 'var(--primary)';
+            
+            try {
+                const response = await fetch(`${API_SEARCH}?q=${encodeURIComponent(query)}&per_page=10`);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    currentSearchResults = data.results;
+                    displaySearchResults(data.results);
+                    statusDiv.innerHTML = `✅ ${data.results.length} résultat(s) trouvé(s)`;
+                    statusDiv.style.color = 'var(--success)';
+                } else {
+                    statusDiv.innerHTML = '❌ Aucune entreprise trouvée';
+                    statusDiv.style.color = 'var(--danger)';
+                    document.getElementById('searchResultsContainer').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erreur de recherche:', error);
+                statusDiv.innerHTML = '❌ Erreur lors de la recherche';
+                statusDiv.style.color = 'var(--danger)';
+            }
+        }
+        
+        // Affichage des résultats de recherche - INSPIRÉ D'AUDIT-SENTINEL
+        function displaySearchResults(results) {
+            const container = document.getElementById('searchResultsContainer');
+            const list = document.getElementById('searchResultsList');
+            
+            container.style.display = 'block';
+            
+            list.innerHTML = results.map((company, index) => {
+                const isActive = company.etat_administratif === 'A';
+                const statusColor = isActive ? 'var(--success)' : 'var(--danger)';
+                const statusText = isActive ? 'ACTIF' : 'FERMÉ';
+                const ville = company.siege?.libelle_commune || 'N/A';
+                
+                return `
+                    <div onclick="selectCompany(${index})" 
+                         style="background: white; border: 2px solid var(--border); border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s;"
+                         onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 4px 12px rgba(30, 60, 114, 0.2)';"
+                         onmouseout="this.style.borderColor='var(--border)'; this.style.boxShadow='none';">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.25rem;">
+                                    ${company.nom_complet || company.nom_raison_sociale || 'N/A'}
+                                </div>
+                                <div style="font-family: monospace; font-weight: 700; color: var(--primary); font-size: 0.85rem;">
+                                    SIREN: ${formatSiren(company.siren)}
+                                </div>
+                            </div>
+                            <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; background: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor};">
+                                ${statusText}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-light); display: flex; gap: 1rem;">
+                            <span>📍 ${ville}</span>
+                            ${company.activite_principale ? `<span>💼 ${company.activite_principale}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Sélection d'une entreprise - INSPIRÉ D'AUDIT-SENTINEL
+        function selectCompany(index) {
+            const company = currentSearchResults[index];
+            
+            // Remplir les champs
+            document.getElementById('raisonSociale').value = company.nom_complet || company.nom_raison_sociale || '';
+            document.getElementById('siren').value = formatSiren(company.siren);
+            
+            // Masquer les résultats
+            document.getElementById('searchResultsContainer').style.display = 'none';
+            document.getElementById('searchStatus').innerHTML = '✅ Entreprise sélectionnée';
+            document.getElementById('searchStatus').style.color = 'var(--success)';
+            
+            // Animation de confirmation
+            const raisonSocialeField = document.getElementById('raisonSociale');
+            const sirenField = document.getElementById('siren');
+            raisonSocialeField.style.background = '#d4edda';
+            sirenField.style.background = '#d4edda';
+            
+            setTimeout(() => {
+                raisonSocialeField.style.background = '#f8fafc';
+                sirenField.style.background = '#f8fafc';
+            }, 1500);
+        }
+        
+        // Formater le SIREN - INSPIRÉ D'AUDIT-SENTINEL
+        function formatSiren(siren) {
+            if (!siren) return '';
+            const cleaned = siren.replace(/\s/g, '');
+            return cleaned.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+        }
+        
+        // Initialisation - MÉTHODE QAM SIMPLIFIÉE
+        window.onload = function() {
+            console.log('Window loaded, initialisation...');
             initSignaturePad();
             initRiskChart();
-        });
+            console.log('Initialisation terminée');
+        };
         
         // Navigation entre les étapes
         function nextStep() {
@@ -1142,6 +1305,11 @@
                 
                 document.getElementById('step' + currentStep).classList.add('active');
                 document.querySelector(`.progress-item[data-step="${currentStep}"]`).classList.add('active');
+                
+                // Si on arrive à l'étape signature, ajuster le canvas
+                if (currentStep === 4) {
+                    setTimeout(adjustCanvas, 200);
+                }
                 
                 if (currentStep === 5) {
                     generatePreview();
@@ -1172,9 +1340,15 @@
                 const raisonSociale = document.getElementById('raisonSociale').value;
                 const dateExercice = document.getElementById('dateExercice').value;
                 const typeMission = document.getElementById('typeMission').value;
+                const siren = document.getElementById('siren').value;
                 
                 if (!raisonSociale || !dateExercice || !typeMission) {
                     alert('Veuillez remplir tous les champs obligatoires');
+                    return false;
+                }
+                
+                if (!siren) {
+                    alert('Veuillez rechercher et sélectionner une entreprise pour obtenir le SIREN');
                     return false;
                 }
             }
@@ -1208,7 +1382,7 @@
                 }
                 
                 // Vérifier qu'une signature existe
-                if (signatureMode === 'draw' && signaturePad.isEmpty()) {
+                if (signatureMode === 'draw' && signaturePad && signaturePad.isEmpty()) {
                     alert('Veuillez signer le document');
                     return false;
                 }
@@ -1222,11 +1396,11 @@
             return true;
         }
         
-        // Calcul des seuils de signification
+        // Calcul des seuils de signification - Travaille en K€
         function calculateThresholds() {
-            const ca = parseFloat(document.getElementById('ca').value) || 0;
-            const resultat = Math.abs(parseFloat(document.getElementById('resultat').value) || 0);
-            const totalBilan = parseFloat(document.getElementById('totalBilan').value) || 0;
+            const ca = parseFloat(document.getElementById('ca').value) || 0; // Déjà en K€
+            const resultat = Math.abs(parseFloat(document.getElementById('resultat').value) || 0); // Déjà en K€
+            const totalBilan = parseFloat(document.getElementById('totalBilan').value) || 0; // Déjà en K€
             
             // Méthode de calcul selon NEP 320
             let seuilGlobal = 0;
@@ -1245,9 +1419,26 @@
             const seuilPlanification = seuilGlobal * 0.75;
             const seuilAnomalie = seuilGlobal * 0.05;
             
-            document.getElementById('seuilGlobal').textContent = formatCurrency(seuilGlobal);
-            document.getElementById('seuilPlanification').textContent = formatCurrency(seuilPlanification);
-            document.getElementById('seuilAnomalie').textContent = formatCurrency(seuilAnomalie);
+            // Affichage direct en K€ (sans conversion car déjà en K€)
+            document.getElementById('seuilGlobal').textContent = formatKE(seuilGlobal);
+            document.getElementById('seuilPlanification').textContent = formatKE(seuilPlanification);
+            document.getElementById('seuilAnomalie').textContent = formatKE(seuilAnomalie);
+        }
+        
+        // Fonction pour formater directement en K€
+        function formatKE(value) {
+            return new Intl.NumberFormat('fr-FR', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 1
+            }).format(value) + ' K€';
+        }
+        
+        // Fonction pour formater les montants en K€ (pour l'affichage)
+        function formatCurrencyKE(value) {
+            return new Intl.NumberFormat('fr-FR', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 1
+            }).format(value) + ' K€';
         }
         
         function formatCurrency(value) {
@@ -1261,8 +1452,10 @@
         
         // Gestion du graphique radar des risques
         function initRiskChart() {
-            const ctx = document.getElementById('riskChart').getContext('2d');
-            riskChart = new Chart(ctx, {
+            const ctx = document.getElementById('riskChart');
+            if (!ctx) return;
+            
+            riskChart = new Chart(ctx.getContext('2d'), {
                 type: 'radar',
                 data: {
                     labels: [
@@ -1338,8 +1531,10 @@
             updateScoreColor('score3', risk3);
             updateScoreColor('score4', risk4);
             
-            riskChart.data.datasets[0].data = [risk1, risk2, risk3, risk4];
-            riskChart.update();
+            if (riskChart) {
+                riskChart.data.datasets[0].data = [risk1, risk2, risk3, risk4];
+                riskChart.update();
+            }
             
             // Calcul du risque moyen
             const avgRisk = (risk1 + risk2 + risk3 + risk4) / 4;
@@ -1384,57 +1579,66 @@
             }
         }
         
-        // Gestion de la signature
+        // Gestion de la signature - COPIÉ DU CODE QAM QUI FONCTIONNE
         function initSignaturePad() {
             const canvas = document.getElementById('signatureCanvas');
+            if (!canvas) {
+                console.error('Canvas de signature non trouvé');
+                return;
+            }
             
-            // Attendre que le DOM soit complètement chargé
-            setTimeout(() => {
-                resizeCanvas();
-                
-                signaturePad = new SignaturePad(canvas, {
-                    backgroundColor: 'rgb(255, 255, 255)',
-                    penColor: 'rgb(30, 60, 114)',
-                    minWidth: 1,
-                    maxWidth: 3,
-                    throttle: 0,
-                    velocityFilterWeight: 0.7
-                });
-                
-                console.log('Signature pad initialisé');
-            }, 100);
+            console.log('Initialisation du SignaturePad...');
             
-            window.addEventListener('resize', resizeCanvas);
+            // Ajuster les dimensions du canvas - MÉTHODE QAM
+            adjustCanvas();
+            
+            // Créer le SignaturePad
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(255, 255, 255)',
+                penColor: 'rgb(30, 60, 114)',
+                minWidth: 1,
+                maxWidth: 3
+            });
+            
+            console.log('SignaturePad créé avec succès');
+            
+            // Gestion du redimensionnement - MÉTHODE QAM
+            window.addEventListener('resize', adjustCanvas);
         }
         
-        function resizeCanvas() {
+        function adjustCanvas() {
             const canvas = document.getElementById('signatureCanvas');
-            const container = canvas.parentElement;
+            if (!canvas) return;
             
-            // Définir des dimensions fixes pour le canvas
-            canvas.style.width = '100%';
-            canvas.style.height = '200px';
-            
-            // Récupérer les dimensions réelles après application du style
-            const rect = canvas.getBoundingClientRect();
-            
-            // Configurer les dimensions du canvas en pixels réels
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = rect.width * ratio;
-            canvas.height = rect.height * ratio;
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
             
-            // Mise à l'échelle du contexte
-            const ctx = canvas.getContext('2d');
-            ctx.scale(ratio, ratio);
-            
-            // Réinitialiser le signaturePad si il existe déjà
             if (signaturePad) {
                 signaturePad.clear();
             }
+            
+            console.log('Canvas ajusté:', canvas.width, 'x', canvas.height);
         }
         
         function clearSignature() {
-            signaturePad.clear();
+            if (signaturePad) {
+                signaturePad.clear();
+                console.log('Signature effacée');
+            }
+        }
+        
+        function testSignature() {
+            console.log('=== TEST SIGNATURE ===');
+            console.log('SignaturePad existe:', !!signaturePad);
+            if (signaturePad) {
+                console.log('Signature vide:', signaturePad.isEmpty());
+                console.log('Points:', signaturePad.toData());
+                alert('SignaturePad fonctionne ! Vérifiez la console pour plus de détails.');
+            } else {
+                alert('Erreur: SignaturePad n\'est pas initialisé. Rechargez la page.');
+            }
         }
         
         function selectSignatureMode(mode) {
@@ -1486,7 +1690,7 @@
             }
         }
         
-        // Génération de la prévisualisation
+        // Génération de la prévisualisation - MODIFIÉ pour afficher en K€
         function generatePreview() {
             const data = collectFormData();
             
@@ -1508,7 +1712,7 @@
             }
             
             let signatureImg = '';
-            if (signatureMode === 'draw') {
+            if (signatureMode === 'draw' && signaturePad) {
                 signatureImg = signaturePad.toDataURL();
             } else {
                 signatureImg = uploadedSignature;
@@ -1555,16 +1759,16 @@
                 <div class="preview-grid">
                     <div class="preview-item">
                         <div class="preview-item-label">Chiffre d'affaires</div>
-                        <div class="preview-item-value">${formatCurrency(data.ca)}</div>
+                        <div class="preview-item-value">${formatKE(data.ca)}</div>
                     </div>
                     <div class="preview-item">
                         <div class="preview-item-label">Résultat net</div>
-                        <div class="preview-item-value">${formatCurrency(data.resultat)}</div>
+                        <div class="preview-item-value">${formatKE(data.resultat)}</div>
                     </div>
                     ${data.totalBilan ? `
                     <div class="preview-item">
                         <div class="preview-item-label">Total du bilan</div>
-                        <div class="preview-item-value">${formatCurrency(data.totalBilan)}</div>
+                        <div class="preview-item-value">${formatKE(data.totalBilan)}</div>
                     </div>
                     ` : ''}
                     <div class="preview-item">
@@ -1606,7 +1810,7 @@
                 </div>
                 
                 <div style="text-align: center; margin: 2rem 0;">
-                    <img src="${riskChart.toBase64Image()}" style="max-width: 400px; border: 2px solid var(--border); border-radius: 12px; padding: 1rem; background: white;">
+                    ${riskChart ? `<img src="${riskChart.toBase64Image()}" style="max-width: 400px; border: 2px solid var(--border); border-radius: 12px; padding: 1rem; background: white;">` : ''}
                 </div>
                 
                 <h3 class="preview-section-title">4. Décision</h3>
@@ -1623,7 +1827,7 @@
                 
                 <div class="preview-signature">
                     <p style="margin-bottom: 1rem; font-weight: 600;">Le Commissaire aux Comptes,</p>
-                    <img src="${signatureImg}" alt="Signature">
+                    ${signatureImg ? `<img src="${signatureImg}" alt="Signature">` : ''}
                     <p class="preview-signature-name">${data.nomSignataire}</p>
                     <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">
                         Date : ${new Date().toLocaleDateString('fr-FR')}
@@ -1650,7 +1854,7 @@
             };
         }
         
-        // Génération du PDF
+        // Génération du PDF - MODIFIÉ pour afficher en K€ et ajouter le copyright
         async function generatePDF() {
             try {
                 // Vérifier que jsPDF est chargé
@@ -1738,7 +1942,7 @@
                 
                 yPos += 8;
                 
-                // Section 2 : Seuils
+                // Section 2 : Seuils - MODIFIÉ pour K€
                 checkNewPage(50);
                 doc.setFontSize(13);
                 doc.setFont('helvetica', 'bold');
@@ -1754,12 +1958,12 @@
                 doc.setTextColor(0, 0, 0);
                 
                 const seuilItems = [
-                    { label: 'Chiffre d\'affaires', value: formatCurrency(data.ca) },
-                    { label: 'Résultat net', value: formatCurrency(data.resultat) }
+                    { label: 'Chiffre d\'affaires', value: formatKE(data.ca) },
+                    { label: 'Résultat net', value: formatKE(data.resultat) }
                 ];
                 
                 if (data.totalBilan) {
-                    seuilItems.push({ label: 'Total du bilan', value: formatCurrency(data.totalBilan) });
+                    seuilItems.push({ label: 'Total du bilan', value: formatKE(data.totalBilan) });
                 }
                 
                 seuilItems.forEach(item => {
@@ -1838,13 +2042,15 @@
                 
                 // Graphique radar
                 try {
-                    const chartImg = riskChart.toBase64Image();
-                    const imgWidth = 90;
-                    const imgHeight = 70;
-                    
-                    checkNewPage(imgHeight + 5);
-                    doc.addImage(chartImg, 'PNG', (pageWidth - imgWidth) / 2, yPos, imgWidth, imgHeight);
-                    yPos += imgHeight + 10;
+                    if (riskChart) {
+                        const chartImg = riskChart.toBase64Image();
+                        const imgWidth = 90;
+                        const imgHeight = 70;
+                        
+                        checkNewPage(imgHeight + 5);
+                        doc.addImage(chartImg, 'PNG', (pageWidth - imgWidth) / 2, yPos, imgWidth, imgHeight);
+                        yPos += imgHeight + 10;
+                    }
                 } catch (e) {
                     console.error('Erreur lors de l\'ajout du graphique:', e);
                     yPos += 5;
@@ -1918,7 +2124,7 @@
                 // Ajouter la signature
                 try {
                     let signatureImg = '';
-                    if (signatureMode === 'draw') {
+                    if (signatureMode === 'draw' && signaturePad) {
                         if (!signaturePad.isEmpty()) {
                             signatureImg = signaturePad.toDataURL();
                         }
@@ -1943,7 +2149,7 @@
                 doc.setTextColor(100, 100, 100);
                 doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, sigX, yPos);
                 
-                // Pied de page sur toutes les pages
+                // Pied de page sur toutes les pages - MODIFIÉ avec copyright BeepBeepOffice
                 const totalPages = doc.internal.getNumberOfPages();
                 for (let i = 1; i <= totalPages; i++) {
                     doc.setPage(i);
@@ -1951,6 +2157,11 @@
                     doc.setTextColor(150, 150, 150);
                     doc.text(`Page ${i} sur ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
                     doc.text('Document confidentiel - Normes NEP', pageWidth / 2, pageHeight - 5, { align: 'center' });
+                    
+                    // Copyright BeepBeepOffice 2026
+                    doc.setTextColor(30, 60, 114);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('© 2026 BeepBeepOffice', pageWidth / 2, pageHeight - 15, { align: 'center' });
                 }
                 
                 // Téléchargement
